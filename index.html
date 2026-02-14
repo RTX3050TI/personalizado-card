@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Card Generator</title>
+</head>
+<body>
+    <h1>Create a Romantic Valentine's Card</h1>
+    <form id="valentineForm">
+        <label for="recipientName">Recipient's Name:</label><br>
+        <input type="text" id="recipientName" name="recipientName" required><br><br>
+        <label for="message">Your Message:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50" required></textarea><br><br>
+        <input type="submit" value="Generate Card">
+    </form>
+    <div id="cardOutput" style="display: none;">
+        <h2>Your Valentine's Card</h2>
+        <p>To: <span id="outputRecipientName"></span></p>
+        <p>Message: <span id="outputMessage"></span></p>
+    </div>
+
+    <script>
+        document.getElementById('valentineForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const recipientName = document.getElementById('recipientName').value;
+            const message = document.getElementById('message').value;
+            document.getElementById('outputRecipientName').innerText = recipientName;
+            document.getElementById('outputMessage').innerText = message;
+            document.getElementById('cardOutput').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
