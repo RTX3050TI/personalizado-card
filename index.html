@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cartas de Amor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para comprimir la URL y hacerla más corta -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* Estilos Base */
@@ -212,6 +214,14 @@
                         <span>📸 Tus Fotos (URLs)</span>
                         <span class="text-xs font-normal text-pink-400 bg-pink-100 px-2 py-0.5 rounded-full">Se animarán solas</span>
                     </label>
+
+                    <!-- Aviso sobre Facebook/Instagram -->
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-r text-xs text-yellow-800 shadow-sm">
+                        <p class="font-bold flex items-center gap-1">⚠️ ¿Tus fotos no salen?</p>
+                        <p class="mt-1">Los enlaces de <strong>Facebook, Instagram o WhatsApp</strong> caducan rápido y dejan de verse.</p>
+                        <p class="mt-2">💡 <strong>Solución:</strong> Sube tus fotos a <a href="https://postimages.org/" target="_blank" class="underline text-blue-600 font-bold hover:text-blue-800">PostImages.org</a> (es gratis) y copia el "Enlace directo" para pegarlo aquí.</p>
+                    </div>
+
                     <div class="space-y-3">
                         <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 1 (opcional)">
                         <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 2 (opcional)">
@@ -230,25 +240,37 @@
                 <!-- Botones -->
                 <div class="pt-4">
                     <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transform transition-all duration-300 text-xl flex items-center justify-center gap-2">
-                        <span>🔒</span> Generar Carta Segura
+                        <span>💌</span> Generar Carta
                     </button>
                     <p class="text-center text-xs text-gray-400 mt-3">
-                        <span class="inline-block bg-gray-100 px-2 py-1 rounded">🛡️ Modo Seguro Activo</span> 
-                        La URL generada estará oculta y codificada.
+                        <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded">🛡️ Tecnología de Compresión Activa</span> 
                     </p>
                 </div>
             </form>
             
             <!-- Área de resultado -->
             <div id="resultArea" class="hidden mt-8 text-center bg-green-50 p-6 rounded-2xl border border-green-200 animation-fade-in">
-                <p class="font-bold text-green-700 mb-2 text-lg">¡Tu carta mágica está lista!</p>
-                <div class="relative">
-                    <input type="text" id="shareLink" readonly class="w-full bg-white p-4 pr-12 rounded-xl border border-green-200 mb-4 text-sm text-gray-500 font-mono shadow-inner">
+                <p class="font-bold text-green-700 mb-2 text-lg">¡Tu carta está lista!</p>
+                
+                <p class="text-xs text-gray-500 mb-2 px-4">
+                    El enlace es un poco largo porque guarda toda tu carta de forma segura sin base de datos.
+                </p>
+
+                <div class="relative group">
+                    <input type="text" id="shareLink" readonly class="w-full bg-white p-4 pr-12 rounded-xl border border-green-200 mb-4 text-xs text-gray-400 font-mono shadow-inner cursor-pointer" onclick="this.select()">
                     <span class="absolute right-4 top-4 text-gray-400">🔗</span>
                 </div>
-                <div class="flex gap-3 justify-center">
-                    <button onclick="copyLink()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-ui font-bold transition shadow-sm hover:shadow">Copiar Link</button>
-                    <button onclick="openLink()" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 rounded-xl font-ui font-bold transition shadow-md hover:shadow-lg">Ver Resultado</button>
+
+                <div class="flex flex-col gap-3 justify-center">
+                    <div class="flex gap-3">
+                        <button onclick="copyLink()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-3 rounded-xl font-ui font-bold transition shadow-sm hover:shadow">Copiar Enlace</button>
+                        <button onclick="openLink()" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-ui font-bold transition shadow-md hover:shadow-lg">Ver Carta</button>
+                    </div>
+                    
+                    <!-- BOTÓN MÁGICO PARA ACORTAR -->
+                    <button onclick="shortenLink()" class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white px-4 py-3 rounded-xl font-ui font-bold transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:scale-[1.02]">
+                        <span>🪄</span> Acortar enlace (Hacerlo pequeñito)
+                    </button>
                 </div>
             </div>
         </div>
@@ -375,11 +397,10 @@
             formView.classList.remove('hidden-section');
         }
 
-        // --- 2. FUNCIONES DEL MODO CREADOR (CON SEGURIDAD) ---
+        // --- 2. FUNCIONES DEL MODO CREADOR (CON COMPRESIÓN LZ-STRING) ---
         document.getElementById('cardForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Recolectar datos sin encoding todavía
             const rawData = {
                 p: document.getElementById('inputPara').value,
                 d: document.getElementById('inputDe').value,
@@ -389,7 +410,6 @@
                 f: []
             };
             
-            // Recolectar YouTube ID
             let ytUrl = document.getElementById('inputYoutube').value;
             if (ytUrl) {
                 const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -399,25 +419,20 @@
                 }
             }
             
-            // Recolectar Fotos
             document.querySelectorAll('.photo-input').forEach((input) => {
                 if(input.value.trim() !== "") {
                     rawData.f.push(input.value.trim());
                 }
             });
 
-            // ENCRIPTACIÓN / OFUSCACIÓN
-            // Convertimos el objeto a JSON string
+            // COMPRESIÓN DE DATOS (NUEVO)
             const jsonString = JSON.stringify(rawData);
-            // Codificamos para URL (para caracteres especiales y emojis)
-            const uriEncoded = encodeURIComponent(jsonString);
-            // Convertimos a Base64 (esto hace que sea ilegible a simple vista)
-            const secureData = btoa(uriEncoded);
+            // Usamos LZString para comprimir en lugar de solo Base64
+            const compressedData = LZString.compressToEncodedURIComponent(jsonString);
 
             // Construir URL Base
             const baseUrl = window.location.href.split('?')[0];
-            // URL limpia y corta: ?d=XYZ...
-            const finalUrl = `${baseUrl}?d=${secureData}`;
+            const finalUrl = `${baseUrl}?d=${compressedData}`;
 
             // Mostrar resultado
             const resultArea = document.getElementById('resultArea');
@@ -434,39 +449,59 @@
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             document.execCommand("copy");
-            alert("¡Enlace seguro copiado!");
+            alert("¡Enlace copiado! Si es muy largo, usa el botón 'Acortar enlace'.");
         }
 
         function openLink() {
             window.location.href = document.getElementById("shareLink").value;
         }
 
-        // --- 3. FUNCIONES DEL MODO CARTA (DECODIFICACIÓN Y RENDERIZADO) ---
+        function shortenLink() {
+            const longUrl = document.getElementById("shareLink").value;
+            // Abre TinyURL en una nueva pestaña con el enlace pre-cargado
+            window.open('https://tinyurl.com/create.php?url=' + encodeURIComponent(longUrl), '_blank');
+        }
+
+        // --- 3. FUNCIONES DEL MODO CARTA (DESCOMPRESIÓN) ---
 
         function prepareCardData() {
             let de, para, titulo, mensaje, yt, fotosRaw = [];
 
             if (hasSecureData) {
                 try {
-                    // DECODIFICACIÓN
                     const encoded = params.get('d');
-                    const decodedUri = atob(encoded); // Base64 a URI String
-                    const jsonString = decodeURIComponent(decodedUri); // URI a JSON String
-                    const data = JSON.parse(jsonString); // JSON a Objeto
+                    
+                    // INTENTO 1: Descompresión LZString (Nuevo Método)
+                    let jsonString = LZString.decompressFromEncodedURIComponent(encoded);
+                    
+                    // INTENTO 2: Si falla o es nulo, probar método antiguo (Base64 estándar)
+                    if (!jsonString) {
+                         try {
+                            const decodedUri = atob(encoded);
+                            jsonString = decodeURIComponent(decodedUri);
+                         } catch(err) {
+                             console.error("Error fallback decode", err);
+                         }
+                    }
 
-                    de = data.d;
-                    para = data.p;
-                    titulo = data.t;
-                    mensaje = data.m;
-                    yt = data.y;
-                    fotosRaw = data.f || [];
+                    if(jsonString) {
+                        const data = JSON.parse(jsonString);
+                        de = data.d;
+                        para = data.p;
+                        titulo = data.t;
+                        mensaje = data.m;
+                        yt = data.y;
+                        fotosRaw = data.f || [];
+                    } else {
+                        throw new Error("Datos corruptos");
+                    }
 
                 } catch (e) {
-                    alert("Error al leer la carta. El enlace podría estar incompleto.");
+                    alert("Error al leer la carta. El enlace podría estar incompleto o dañado.");
                     return;
                 }
             } else {
-                // FALLBACK MODO ANTIGUO (Retrocompatibilidad)
+                // FALLBACK MODO ANTIGUO
                 de = params.get('de');
                 para = params.get('para');
                 titulo = params.get('titulo');
@@ -502,20 +537,17 @@
                 }
             }
 
-            // --- RENDERIZADO DE FOTOS EN LAS ZONAS DE RODEADO ---
+            // --- RENDERIZADO DE FOTOS ---
             const galleryLeft = document.getElementById('galleryLeft');
             const galleryRight = document.getElementById('galleryRight');
             
-            // Limpiar zonas
             galleryLeft.innerHTML = '';
             galleryRight.innerHTML = '';
 
             photoUrls.forEach((url, index) => {
-                // Rotación aleatoria
                 const rotation = (Math.random() * 12) - 6;
                 const delay = Math.random() * 2 + 's';
                 
-                // Crear Polaroid HTML
                 let heartsHTML = '';
                 for(let h=0; h<3; h++) {
                     const mx = (Math.random() * 60 - 30) + 'px';
@@ -523,16 +555,17 @@
                     heartsHTML += `<div class="mini-heart" style="left:${50 + (Math.random()*40-20)}%; top:0; --mx:${mx}; --my:${my}; animation-delay:${h*0.2}s">❤️</div>`;
                 }
 
+                const errorImage = 'https://placehold.co/400x400/pink/white?text=Foto+Privada';
+
                 const polaroidHTML = `
                     <div class="polaroid" style="--rotation:${rotation}deg; --delay:${delay};">
                         ${heartsHTML}
                         <div class="w-40 h-40 md:w-48 md:h-48 overflow-hidden bg-gray-100 mb-2 rounded-sm shadow-inner relative group-hover:brightness-110 transition">
-                            <img src="${url}" class="w-full h-full object-cover transition transform duration-700 hover:scale-110" alt="Recuerdo" onerror="this.src='https://placehold.co/400x400/pink/white?text=Amor'">
+                            <img src="${url}" class="w-full h-full object-cover transition transform duration-700 hover:scale-110" alt="Recuerdo" onerror="this.src='${errorImage}'">
                         </div>
                     </div>
                 `;
 
-                // Distribuir: 2 a la izquierda/arriba, 3 a la derecha/abajo
                 if (index < 2) {
                     galleryLeft.innerHTML += polaroidHTML;
                 } else {
@@ -545,7 +578,6 @@
             const envelope = document.getElementById('mainEnvelope');
             envelope.classList.add('open');
             
-            // Parar animación de flotar del sobre al abrir
             document.querySelector('.envelope-container').style.animation = 'none';
 
             if (musicId) {
