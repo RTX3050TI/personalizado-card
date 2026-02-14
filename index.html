@@ -3,32 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valentine's Card Generator</title>
+    <title>Valentine's Card</title>
 </head>
 <body>
-    <h1>Create a Romantic Valentine's Card</h1>
-    <form id="valentineForm">
-        <label for="recipientName">Recipient's Name:</label><br>
+    <h1>Create Your Valentine's Card</h1>
+    <form action="carta.html" method="GET">
+        <label for="recipientName">Recipient Name:</label><br>
         <input type="text" id="recipientName" name="recipientName" required><br><br>
-        <label for="message">Your Message:</label><br>
-        <textarea id="message" name="message" rows="4" cols="50" required></textarea><br><br>
-        <input type="submit" value="Generate Card">
-    </form>
-    <div id="cardOutput" style="display: none;">
-        <h2>Your Valentine's Card</h2>
-        <p>To: <span id="outputRecipientName"></span></p>
-        <p>Message: <span id="outputMessage"></span></p>
-    </div>
 
-    <script>
-        document.getElementById('valentineForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const recipientName = document.getElementById('recipientName').value;
-            const message = document.getElementById('message').value;
-            document.getElementById('outputRecipientName').innerText = recipientName;
-            document.getElementById('outputMessage').innerText = message;
-            document.getElementById('cardOutput').style.display = 'block';
-        });
-    </script>
+        <label for="senderName">Sender Name:</label><br>
+        <input type="text" id="senderName" name="senderName" required><br><br>
+
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" required></textarea><br><br>
+
+        <label for="photo1">Photo URL 1:</label><br>
+        <input type="url" id="photo1" name="photo1"><br><br>
+
+        <label for="photo2">Photo URL 2:</label><br>
+        <input type="url" id="photo2" name="photo2"><br><br>
+
+        <label for="photo3">Photo URL 3:</label><br>
+        <input type="url" id="photo3" name="photo3"><br><br>
+
+        <label for="photo4">Photo URL 4:</label><br>
+        <input type="url" id="photo4" name="photo4"><br><br>
+
+        <label for="photo5">Photo URL 5:</label><br>
+        <input type="url" id="photo5" name="photo5"><br><br>
+
+        <label for="youtubeLink">YouTube Link:</label><br>
+        <input type="url" id="youtubeLink" name="youtubeLink"><br><br>
+
+        <input type="submit" value="Create Card">
+    </form>
 </body>
 </html>
