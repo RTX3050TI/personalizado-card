@@ -243,7 +243,7 @@
                         <span>💌</span> Generar Carta
                     </button>
                     <p class="text-center text-xs text-gray-400 mt-3">
-                        <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded">🛡️ Tecnología de Compresión Activa</span> 
+                        <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded">🛡️ Tecnología Anti-Errores Activa (Hash Mode)</span> 
                     </p>
                 </div>
             </form>
@@ -253,7 +253,7 @@
                 <p class="font-bold text-green-700 mb-2 text-lg">¡Tu carta está lista!</p>
                 
                 <p class="text-xs text-gray-500 mb-2 px-4">
-                    El enlace es un poco largo porque guarda toda tu carta de forma segura sin base de datos.
+                    El enlace es largo pero 100% seguro. No necesitas base de datos.
                 </p>
 
                 <div class="relative group">
@@ -368,11 +368,21 @@
     <!-- Lógica JavaScript -->
     <script>
         // --- 1. LECTURA DE URL Y ESTADO INICIAL ---
-        const params = new URLSearchParams(window.location.search);
+        // Modificación para evitar Error 414: Priorizar el Hash (#) sobre el Search (?)
+        // El servidor no lee lo que está después del #, por lo que no da error de "URI Too Long".
         
-        // Detectar si hay datos en el formato nuevo (seguro) o antiguo
-        const hasSecureData = params.has('d'); // 'd' es el parámetro encriptado
-        const hasLegacyData = params.has('para'); // Retrocompatibilidad
+        // 1. Obtener parámetros de búsqueda normales
+        let params = new URLSearchParams(window.location.search);
+        
+        // 2. Si hay un Hash (ej: #d=...), usar eso en su lugar (la nueva forma segura)
+        if(window.location.hash && window.location.hash.includes('d=')) {
+            // Quitamos el '#' del inicio
+            const hashString = window.location.hash.substring(1); 
+            params = new URLSearchParams(hashString);
+        }
+        
+        const hasSecureData = params.has('d'); 
+        const hasLegacyData = params.has('para'); 
         
         const hasData = hasSecureData || hasLegacyData;
 
@@ -397,7 +407,7 @@
             formView.classList.remove('hidden-section');
         }
 
-        // --- 2. FUNCIONES DEL MODO CREADOR (CON COMPRESIÓN LZ-STRING) ---
+        // --- 2. FUNCIONES DEL MODO CREADOR (CON COMPRESIÓN Y HASH) ---
         document.getElementById('cardForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -410,6 +420,7 @@
                 f: []
             };
             
+            // Recolectar YouTube
             let ytUrl = document.getElementById('inputYoutube').value;
             if (ytUrl) {
                 const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -419,20 +430,32 @@
                 }
             }
             
+            // Recolectar Fotos con validación de longitud (Anti-Crash)
+            let photoError = false;
             document.querySelectorAll('.photo-input').forEach((input) => {
-                if(input.value.trim() !== "") {
-                    rawData.f.push(input.value.trim());
+                const val = input.value.trim();
+                if(val !== "") {
+                    // Validar si es una imagen Base64 gigante (más de 10000 caracteres)
+                    if(val.length > 5000 && val.includes('base64')) {
+                        photoError = true;
+                    } else {
+                        rawData.f.push(val);
+                    }
                 }
             });
 
-            // COMPRESIÓN DE DATOS (NUEVO)
+            if(photoError) {
+                alert("⚠️ Una de tus imágenes es demasiado larga (probablemente copiaste la imagen en vez del enlace). Por favor, usa una URL corta (ej. PostImages.org) para que la carta funcione.");
+                return;
+            }
+
+            // COMPRESIÓN DE DATOS
             const jsonString = JSON.stringify(rawData);
-            // Usamos LZString para comprimir en lugar de solo Base64
             const compressedData = LZString.compressToEncodedURIComponent(jsonString);
 
-            // Construir URL Base
-            const baseUrl = window.location.href.split('?')[0];
-            const finalUrl = `${baseUrl}?d=${compressedData}`;
+            // Construir URL Base con HASH (#) para evitar error 414
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            const finalUrl = `${baseUrl}#d=${compressedData}`;
 
             // Mostrar resultado
             const resultArea = document.getElementById('resultArea');
@@ -449,16 +472,17 @@
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             document.execCommand("copy");
-            alert("¡Enlace copiado! Si es muy largo, usa el botón 'Acortar enlace'.");
+            alert("¡Enlace copiado! Este enlace usa una tecnología segura (#) que no fallará.");
         }
 
         function openLink() {
             window.location.href = document.getElementById("shareLink").value;
+            // Recargar para que detecte el hash si ya estamos en la misma página
+            if(window.location.hash) window.location.reload(); 
         }
 
         function shortenLink() {
             const longUrl = document.getElementById("shareLink").value;
-            // Abre TinyURL en una nueva pestaña con el enlace pre-cargado
             window.open('https://tinyurl.com/create.php?url=' + encodeURIComponent(longUrl), '_blank');
         }
 
@@ -474,13 +498,14 @@
                     // INTENTO 1: Descompresión LZString (Nuevo Método)
                     let jsonString = LZString.decompressFromEncodedURIComponent(encoded);
                     
-                    // INTENTO 2: Si falla o es nulo, probar método antiguo (Base64 estándar)
+                    // INTENTO 2: Si falla, probar método antiguo (Base64 estándar) o URI pura
                     if (!jsonString) {
                          try {
                             const decodedUri = atob(encoded);
                             jsonString = decodeURIComponent(decodedUri);
                          } catch(err) {
-                             console.error("Error fallback decode", err);
+                             // Si no es LZ ni Base64, a veces es solo URI component
+                             jsonString = decodeURIComponent(encoded);
                          }
                     }
 
@@ -497,7 +522,8 @@
                     }
 
                 } catch (e) {
-                    alert("Error al leer la carta. El enlace podría estar incompleto o dañado.");
+                    console.error(e);
+                    alert("Hubo un problema leyendo la carta. Intenta crear una nueva con enlaces más cortos.");
                     return;
                 }
             } else {
