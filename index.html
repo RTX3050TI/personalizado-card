@@ -13,7 +13,7 @@
         body {
             font-family: 'Lora', serif;
             overflow-x: hidden;
-            background-color: #fff0f3;
+            /* El fondo se define en .bg-animated */
         }
         .font-handwriting {
             font-family: 'Dancing Script', cursive;
@@ -161,16 +161,21 @@
             display: none !important;
         }
         
-        /* Fondo animado suave */
+        /* Fondo animado suave CON CORAZONES */
         .bg-animated {
-            background: linear-gradient(-45deg, #fff0f3, #ffe5ec, #fff0f3, #ffffff);
-            background-size: 400% 400%;
+            background-color: #ffeef2;
+            /* Capa 1: Patrón de corazones SVG repetido */
+            /* Capa 2: Gradiente suave animado */
+            background-image: 
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ff4d6d' fill-opacity='0.07' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E"),
+                linear-gradient(-45deg, #fff0f3, #ffe0e9, #fff5f8, #ffffff);
+            background-size: 80px 80px, 400% 400%;
             animation: gradientBG 15s ease infinite;
         }
         @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% { background-position: 0% 0%, 0% 50%; }
+            50% { background-position: 0% 0%, 100% 50%; }
+            100% { background-position: 0% 0%, 0% 50%; }
         }
     </style>
 </head>
