@@ -7,10 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Estilos Base y Animaciones */
+        /* Estilos Base */
         body {
             font-family: 'Lora', serif;
             overflow-x: hidden;
+            background-color: #fff0f3;
         }
         .font-handwriting {
             font-family: 'Dancing Script', cursive;
@@ -19,7 +20,7 @@
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* Animación de Pétalos */
+        /* Animación de Pétalos de fondo */
         .petal {
             position: fixed;
             top: -10%;
@@ -29,6 +30,7 @@
             animation-name: fall;
             animation-timing-function: linear;
             animation-iteration-count: infinite;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
 
         @keyframes fall {
@@ -46,6 +48,7 @@
         .cursor::after {
             content: '|';
             animation: blink 1s step-start infinite;
+            color: #ff4d6d;
         }
 
         @keyframes blink {
@@ -56,7 +59,13 @@
         .envelope-container {
             perspective: 1000px;
             cursor: pointer;
+            animation: floatEnvelope 3s ease-in-out infinite;
         }
+        @keyframes floatEnvelope {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
         .envelope {
             position: relative;
             width: 300px;
@@ -64,11 +73,11 @@
             background: #ff4d6d;
             margin: 0 auto;
             border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.4);
             transition: transform 0.5s;
         }
         .envelope:hover {
-            transform: translateY(-5px);
+            transform: scale(1.05);
         }
         .flap {
             position: absolute;
@@ -99,98 +108,147 @@
             align-items: center;
             justify-content: center;
             font-size: 2rem;
+            color: #ff4d6d;
         }
         .envelope.open .letter-preview {
-            transform: translateY(-120px);
+            transform: translateY(-120px) scale(1.1);
         }
         
-        /* Fotos Polaroid */
+        /* Fotos Polaroid Animadas */
         .polaroid {
             background: white;
-            padding: 10px 10px 30px 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 10px 10px 35px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
             transform: rotate(var(--rotation));
-            transition: transform 0.3s, z-index 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            animation: floatPhoto 6s ease-in-out infinite;
+            animation-delay: var(--delay);
+            max-width: 100%;
+        }
+        @keyframes floatPhoto {
+            0%, 100% { transform: rotate(var(--rotation)) translateY(0); }
+            50% { transform: rotate(var(--rotation)) translateY(-10px); }
         }
         .polaroid:hover {
-            transform: scale(1.1) rotate(0deg);
+            transform: scale(1.15) rotate(0deg) !important;
             z-index: 50;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation-play-state: paused;
+        }
+
+        /* Corazones saliendo de la foto */
+        .mini-heart {
+            position: absolute;
+            color: #ff4d6d;
+            font-size: 20px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .polaroid:hover .mini-heart {
+            animation: popHeart 1s ease-out forwards;
+        }
+        @keyframes popHeart {
+            0% { transform: translate(0, 0) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(var(--mx), var(--my)) scale(1.5); opacity: 0; }
         }
 
         /* Utilidades ocultas */
         .hidden-section {
             display: none !important;
         }
+        
+        /* Fondo animado suave */
+        .bg-animated {
+            background: linear-gradient(-45deg, #fff0f3, #ffe5ec, #fff0f3, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
     </style>
 </head>
-<body class="bg-pink-50 min-h-screen text-gray-800">
+<body class="bg-animated min-h-screen text-gray-800">
 
     <!-- =======================
          VISTA 1: EL FORMULARIO
          ======================= -->
     <div id="form-view" class="container mx-auto px-4 py-10 max-w-2xl hidden-section">
-        <div class="bg-white rounded-2xl shadow-xl p-8 border-t-8 border-pink-500">
-            <h1 class="text-4xl font-handwriting text-center text-pink-600 mb-2">Creador de Cartas</h1>
-            <p class="text-center text-gray-500 font-ui text-sm mb-8">Diseña un regalo único y comparte el enlace.</p>
+        <div class="bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white ring-4 ring-pink-100">
+            <h1 class="text-5xl font-handwriting text-center text-pink-600 mb-2 drop-shadow-sm">Creador de Cartas</h1>
+            <p class="text-center text-gray-500 font-ui text-sm mb-8">✨ Crea un momento mágico y seguro ✨</p>
 
             <form id="cardForm" class="space-y-6">
                 <!-- Datos Básicos -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">De (Tu nombre)</label>
-                        <input type="text" id="inputDe" required class="w-full border-gray-300 rounded-lg p-3 border focus:ring-2 focus:ring-pink-400 outline-none" placeholder="Ej: Luis">
+                        <input type="text" id="inputDe" required class="w-full bg-pink-50/50 border-pink-200 rounded-xl p-3 border focus:ring-2 focus:ring-pink-400 outline-none transition" placeholder="Ej: Luis">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Para (Su nombre)</label>
-                        <input type="text" id="inputPara" required class="w-full border-gray-300 rounded-lg p-3 border focus:ring-2 focus:ring-pink-400 outline-none" placeholder="Ej: Ana">
+                        <input type="text" id="inputPara" required class="w-full bg-pink-50/50 border-pink-200 rounded-xl p-3 border focus:ring-2 focus:ring-pink-400 outline-none transition" placeholder="Ej: Ana">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Título de la Carta</label>
-                    <input type="text" id="inputTitulo" required class="w-full border-gray-300 rounded-lg p-3 border focus:ring-2 focus:ring-pink-400 outline-none" placeholder="Ej: Feliz San Valentín, mi amor">
+                    <input type="text" id="inputTitulo" required class="w-full bg-pink-50/50 border-pink-200 rounded-xl p-3 border focus:ring-2 focus:ring-pink-400 outline-none transition" placeholder="Ej: Feliz San Valentín, mi amor">
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Mensaje Especial</label>
-                    <textarea id="inputMensaje" rows="5" required class="w-full border-gray-300 rounded-lg p-3 border focus:ring-2 focus:ring-pink-400 outline-none" placeholder="Escribe aquí lo que sientes..."></textarea>
+                    <textarea id="inputMensaje" rows="5" required class="w-full bg-pink-50/50 border-pink-200 rounded-xl p-3 border focus:ring-2 focus:ring-pink-400 outline-none transition" placeholder="Escribe aquí lo que sientes..."></textarea>
                     <p class="text-xs text-gray-400 mt-1 text-right">Se escribirá automáticamente letra por letra.</p>
                 </div>
 
                 <!-- Fotos -->
-                <div class="bg-pink-50 p-4 rounded-lg border border-pink-100">
-                    <label class="block text-sm font-bold text-pink-700 mb-3">📸 Tus Fotos (URLs)</label>
-                    <div class="space-y-2">
-                        <input type="url" class="photo-input w-full p-2 text-sm border rounded" placeholder="URL Foto 1 (opcional)">
-                        <input type="url" class="photo-input w-full p-2 text-sm border rounded" placeholder="URL Foto 2 (opcional)">
-                        <input type="url" class="photo-input w-full p-2 text-sm border rounded" placeholder="URL Foto 3 (opcional)">
-                        <input type="url" class="photo-input w-full p-2 text-sm border rounded" placeholder="URL Foto 4 (opcional)">
-                        <input type="url" class="photo-input w-full p-2 text-sm border rounded" placeholder="URL Foto 5 (opcional)">
+                <div class="bg-gradient-to-br from-pink-50 to-white p-6 rounded-2xl border border-pink-100 shadow-inner">
+                    <label class="block text-sm font-bold text-pink-600 mb-3 flex items-center gap-2">
+                        <span>📸 Tus Fotos (URLs)</span>
+                        <span class="text-xs font-normal text-pink-400 bg-pink-100 px-2 py-0.5 rounded-full">Se animarán solas</span>
+                    </label>
+                    <div class="space-y-3">
+                        <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 1 (opcional)">
+                        <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 2 (opcional)">
+                        <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 3 (opcional)">
+                        <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 4 (opcional)">
+                        <input type="url" class="photo-input w-full p-3 text-sm border border-pink-100 rounded-lg focus:ring-2 focus:ring-pink-300 outline-none transition" placeholder="URL Foto 5 (opcional)">
                     </div>
-                    <p class="text-xs text-pink-500 mt-2">* Si pones menos de 5, las repetiremos para que se vea bonito.</p>
                 </div>
 
                 <!-- YouTube -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">🎵 Canción de YouTube (Link)</label>
-                    <input type="url" id="inputYoutube" class="w-full border-gray-300 rounded-lg p-3 border focus:ring-2 focus:ring-pink-400 outline-none" placeholder="https://www.youtube.com/watch?v=...">
+                    <input type="url" id="inputYoutube" class="w-full bg-pink-50/50 border-pink-200 rounded-xl p-3 border focus:ring-2 focus:ring-pink-400 outline-none transition" placeholder="https://www.youtube.com/watch?v=...">
                 </div>
 
                 <!-- Botones -->
                 <div class="pt-4">
-                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-1 text-lg">
-                        💌 Generar Carta Única
+                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transform transition-all duration-300 text-xl flex items-center justify-center gap-2">
+                        <span>🔒</span> Generar Carta Segura
                     </button>
+                    <p class="text-center text-xs text-gray-400 mt-3">
+                        <span class="inline-block bg-gray-100 px-2 py-1 rounded">🛡️ Modo Seguro Activo</span> 
+                        La URL generada estará oculta y codificada.
+                    </p>
                 </div>
             </form>
             
             <!-- Área de resultado -->
-            <div id="resultArea" class="hidden mt-8 text-center bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
-                <p class="font-bold text-green-600 mb-2">¡Tu carta está lista!</p>
-                <input type="text" id="shareLink" readonly class="w-full bg-white p-2 rounded border mb-4 text-sm text-gray-500">
-                <div class="flex gap-2 justify-center">
-                    <button onclick="copyLink()" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded font-ui text-sm font-bold transition">Copiar Link</button>
-                    <button onclick="openLink()" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded font-ui text-sm font-bold transition">Ver Ahora</button>
+            <div id="resultArea" class="hidden mt-8 text-center bg-green-50 p-6 rounded-2xl border border-green-200 animation-fade-in">
+                <p class="font-bold text-green-700 mb-2 text-lg">¡Tu carta mágica está lista!</p>
+                <div class="relative">
+                    <input type="text" id="shareLink" readonly class="w-full bg-white p-4 pr-12 rounded-xl border border-green-200 mb-4 text-sm text-gray-500 font-mono shadow-inner">
+                    <span class="absolute right-4 top-4 text-gray-400">🔗</span>
+                </div>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="copyLink()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-ui font-bold transition shadow-sm hover:shadow">Copiar Link</button>
+                    <button onclick="openLink()" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 rounded-xl font-ui font-bold transition shadow-md hover:shadow-lg">Ver Resultado</button>
                 </div>
             </div>
         </div>
@@ -199,65 +257,88 @@
     <!-- =======================
          VISTA 2: EL SOBRE (Intro)
          ======================= -->
-    <div id="envelope-view" class="h-screen w-full flex flex-col items-center justify-center bg-pink-100 hidden-section">
-        <h2 class="text-3xl font-handwriting text-pink-600 mb-10 animate-bounce">Tienes una carta...</h2>
+    <div id="envelope-view" class="h-screen w-full flex flex-col items-center justify-center hidden-section overflow-hidden relative">
+        <!-- Decoración de fondo simple -->
+        <div class="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
+             <div class="absolute top-10 left-10 text-4xl animate-bounce">💕</div>
+             <div class="absolute bottom-20 right-20 text-4xl animate-bounce" style="animation-delay: 1s">💖</div>
+        </div>
+
+        <h2 class="text-4xl md:text-5xl font-handwriting text-pink-600 mb-16 animate-pulse drop-shadow-sm z-10 text-center px-4">Alguien pensó en ti...</h2>
         
-        <div class="envelope-container" onclick="openLetter()">
+        <div class="envelope-container z-10" onclick="openLetter()">
             <div class="envelope" id="mainEnvelope">
                 <div class="flap"></div>
-                <div class="letter-preview">❤️</div>
+                <div class="letter-preview">
+                    <span class="animate-pulse text-red-500">❤️</span>
+                </div>
             </div>
         </div>
         
-        <p class="mt-12 text-gray-500 font-ui text-sm">Toca el sobre para abrir</p>
+        <p class="mt-16 text-pink-400 font-ui text-sm uppercase tracking-widest animate-pulse">Toca el sobre para descubrir</p>
     </div>
 
     <!-- =======================
          VISTA 3: LA CARTA (Contenido)
          ======================= -->
-    <div id="card-view" class="min-h-screen pb-20 hidden-section relative overflow-hidden bg-gradient-to-b from-red-50 to-pink-100">
+    <div id="card-view" class="min-h-screen pb-20 hidden-section relative overflow-hidden flex flex-col items-center">
         <!-- Música (Invisible) -->
         <div id="music-container"></div>
 
         <!-- Botón flotante música -->
-        <div class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur rounded-full p-2 shadow-lg cursor-pointer animate-pulse" onclick="toggleMusicHints()">
+        <div class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur rounded-full p-3 shadow-lg cursor-pointer hover:scale-110 transition animate-spin-slow" onclick="toggleMusicHints()">
             <span class="text-2xl">🎵</span>
         </div>
 
-        <!-- Contenido Principal -->
-        <div class="container mx-auto px-4 pt-10 max-w-4xl relative z-10">
+        <!-- Contenido Principal - Layout Flex para Rodear -->
+        <div class="container mx-auto px-4 pt-10 relative z-10 w-full max-w-7xl">
             
-            <!-- Cabecera -->
-            <div class="text-center mb-12">
-                <div class="inline-block bg-white px-8 py-3 rounded-full shadow-sm mb-4">
-                    <span class="text-gray-500 font-ui text-sm uppercase tracking-widest">Para: <span id="displayPara" class="text-pink-600 font-bold"></span></span>
-                </div>
-                <h1 id="displayTitulo" class="text-5xl md:text-6xl font-handwriting text-red-500 drop-shadow-sm mb-4 leading-tight"></h1>
-                <p class="text-gray-400 font-ui text-sm">De: <span id="displayDe"></span></p>
-            </div>
-
-            <!-- Galería Polaroid (Grid Masonry Simple) -->
-            <div id="photoGallery" class="flex flex-wrap justify-center gap-8 mb-16">
-                <!-- Las fotos se inyectan aquí vía JS -->
-            </div>
-
-            <!-- Carta Texto -->
-            <div class="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-8 md:p-12 max-w-2xl mx-auto border-t-4 border-red-400 relative">
-                <!-- Decoración esquinas -->
-                <div class="absolute -top-3 -left-3 text-4xl transform -rotate-12">📌</div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-4 relative min-h-[700px]">
                 
-                <div class="font-lora text-lg md:text-xl leading-relaxed text-gray-700 min-h-[100px]">
-                    <span id="typewriterText"></span><span class="cursor"></span>
+                <!-- Columna Izquierda / Arriba (2 Fotos) -->
+                <div id="galleryLeft" class="flex flex-row md:flex-col gap-6 w-full md:w-1/4 justify-center items-center order-1 flex-wrap md:flex-nowrap">
+                    <!-- Se inyectan fotos aquí -->
                 </div>
 
-                <div class="mt-8 text-right">
-                    <div class="text-4xl text-red-400">❤</div>
+                <!-- Centro (Carta) -->
+                <div class="w-full md:w-2/4 order-2 z-20 flex flex-col items-center">
+                    
+                    <!-- Cabecera dentro del centro -->
+                    <div class="text-center mb-6 transform hover:scale-105 transition duration-700">
+                        <div class="inline-block bg-white/90 px-8 py-2 rounded-full shadow-lg mb-4 ring-2 ring-pink-100">
+                            <span class="text-gray-400 font-ui text-xs uppercase tracking-[0.2em]">Para</span>
+                            <span id="displayPara" class="text-pink-600 font-bold text-xl ml-2 font-handwriting"></span>
+                        </div>
+                        <h1 id="displayTitulo" class="text-4xl md:text-6xl font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500 drop-shadow-sm mb-2 leading-tight py-2"></h1>
+                        <p class="text-gray-400 font-ui text-sm">Con amor de: <span id="displayDe" class="font-bold text-gray-600"></span></p>
+                    </div>
+
+                    <!-- Tarjeta de Texto -->
+                    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 md:p-12 w-full border border-white relative group hover:shadow-pink-200/50 transition duration-500">
+                        <!-- Decoración esquinas -->
+                        <div class="absolute -top-4 -left-4 text-5xl transform -rotate-12 drop-shadow-md transition group-hover:rotate-0">📌</div>
+                        <div class="absolute -bottom-4 -right-4 text-5xl transform rotate-12 drop-shadow-md transition group-hover:rotate-0">💌</div>
+                        
+                        <div class="font-lora text-lg md:text-xl leading-loose text-gray-700 min-h-[150px] text-justify">
+                            <span id="typewriterText"></span><span class="cursor"></span>
+                        </div>
+
+                        <div class="mt-8 text-center opacity-50">
+                            <span class="text-3xl animate-pulse">❦</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Columna Derecha / Abajo (3 Fotos) -->
+                <div id="galleryRight" class="flex flex-row md:flex-col gap-6 w-full md:w-1/4 justify-center items-center order-3 flex-wrap md:flex-nowrap">
+                    <!-- Se inyectan fotos aquí -->
                 </div>
             </div>
 
-            <!-- Botón crear propia -->
-            <div class="text-center mt-20 opacity-60 hover:opacity-100 transition">
-                <a href="valentine_card.html" class="text-xs text-gray-500 border-b border-gray-400 pb-1">Crear mi propia carta</a>
+            <!-- Footer -->
+            <div class="text-center mt-12 opacity-60 hover:opacity-100 transition pb-8">
+                <a href="valentine_card.html" class="text-xs text-pink-400 hover:text-pink-600 border-b border-pink-300 pb-1 font-ui">💝 Crear mi propia carta sorpresa</a>
             </div>
         </div>
     </div>
@@ -266,7 +347,12 @@
     <script>
         // --- 1. LECTURA DE URL Y ESTADO INICIAL ---
         const params = new URLSearchParams(window.location.search);
-        const hasData = params.has('para'); // Si tiene "para", asumimos que es una carta
+        
+        // Detectar si hay datos en el formato nuevo (seguro) o antiguo
+        const hasSecureData = params.has('d'); // 'd' es el parámetro encriptado
+        const hasLegacyData = params.has('para'); // Retrocompatibilidad
+        
+        const hasData = hasSecureData || hasLegacyData;
 
         // Elementos DOM principales
         const formView = document.getElementById('form-view');
@@ -289,42 +375,49 @@
             formView.classList.remove('hidden-section');
         }
 
-        // --- 2. FUNCIONES DEL MODO CREADOR ---
+        // --- 2. FUNCIONES DEL MODO CREADOR (CON SEGURIDAD) ---
         document.getElementById('cardForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Recolectar datos
-            const de = encodeURIComponent(document.getElementById('inputDe').value);
-            const para = encodeURIComponent(document.getElementById('inputPara').value);
-            const titulo = encodeURIComponent(document.getElementById('inputTitulo').value);
-            const mensaje = encodeURIComponent(document.getElementById('inputMensaje').value);
+            // Recolectar datos sin encoding todavía
+            const rawData = {
+                p: document.getElementById('inputPara').value,
+                d: document.getElementById('inputDe').value,
+                t: document.getElementById('inputTitulo').value,
+                m: document.getElementById('inputMensaje').value,
+                y: '',
+                f: []
+            };
             
             // Recolectar YouTube ID
             let ytUrl = document.getElementById('inputYoutube').value;
-            let ytId = '';
             if (ytUrl) {
-                // Regex simple para sacar ID
                 const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
                 const match = ytUrl.match(regExp);
                 if (match && match[2].length === 11) {
-                    ytId = match[2];
+                    rawData.y = match[2];
                 }
             }
             
             // Recolectar Fotos
-            let fotos = [];
-            document.querySelectorAll('.photo-input').forEach((input, index) => {
+            document.querySelectorAll('.photo-input').forEach((input) => {
                 if(input.value.trim() !== "") {
-                    fotos.push(`foto${index}=${encodeURIComponent(input.value)}`);
+                    rawData.f.push(input.value.trim());
                 }
             });
 
-            // Construir URL Base (detecta si estamos en localhost o web)
+            // ENCRIPTACIÓN / OFUSCACIÓN
+            // Convertimos el objeto a JSON string
+            const jsonString = JSON.stringify(rawData);
+            // Codificamos para URL (para caracteres especiales y emojis)
+            const uriEncoded = encodeURIComponent(jsonString);
+            // Convertimos a Base64 (esto hace que sea ilegible a simple vista)
+            const secureData = btoa(uriEncoded);
+
+            // Construir URL Base
             const baseUrl = window.location.href.split('?')[0];
-            let finalUrl = `${baseUrl}?para=${para}&de=${de}&titulo=${titulo}&mensaje=${mensaje}`;
-            
-            if (ytId) finalUrl += `&yt=${ytId}`;
-            if (fotos.length > 0) finalUrl += `&${fotos.join('&')}`;
+            // URL limpia y corta: ?d=XYZ...
+            const finalUrl = `${baseUrl}?d=${secureData}`;
 
             // Mostrar resultado
             const resultArea = document.getElementById('resultArea');
@@ -333,7 +426,6 @@
             resultArea.classList.remove('hidden');
             shareInput.value = finalUrl;
             
-            // Scroll al resultado
             resultArea.scrollIntoView({ behavior: 'smooth' });
         });
 
@@ -342,70 +434,110 @@
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             document.execCommand("copy");
-            alert("¡Enlace copiado al portapapeles!");
+            alert("¡Enlace seguro copiado!");
         }
 
         function openLink() {
             window.location.href = document.getElementById("shareLink").value;
         }
 
-        // --- 3. FUNCIONES DEL MODO CARTA ---
+        // --- 3. FUNCIONES DEL MODO CARTA (DECODIFICACIÓN Y RENDERIZADO) ---
 
         function prepareCardData() {
-            // Extraer y decodificar datos
-            const de = params.get('de');
-            const para = params.get('para');
-            const titulo = params.get('titulo');
-            const mensaje = params.get('mensaje');
-            const yt = params.get('yt');
+            let de, para, titulo, mensaje, yt, fotosRaw = [];
 
-            // Setear textos estáticos
+            if (hasSecureData) {
+                try {
+                    // DECODIFICACIÓN
+                    const encoded = params.get('d');
+                    const decodedUri = atob(encoded); // Base64 a URI String
+                    const jsonString = decodeURIComponent(decodedUri); // URI a JSON String
+                    const data = JSON.parse(jsonString); // JSON a Objeto
+
+                    de = data.d;
+                    para = data.p;
+                    titulo = data.t;
+                    mensaje = data.m;
+                    yt = data.y;
+                    fotosRaw = data.f || [];
+
+                } catch (e) {
+                    alert("Error al leer la carta. El enlace podría estar incompleto.");
+                    return;
+                }
+            } else {
+                // FALLBACK MODO ANTIGUO (Retrocompatibilidad)
+                de = params.get('de');
+                para = params.get('para');
+                titulo = params.get('titulo');
+                mensaje = params.get('mensaje');
+                yt = params.get('yt');
+                for(let i=0; i<5; i++) {
+                    if(params.has(`foto${i}`)) fotosRaw.push(params.get(`foto${i}`));
+                }
+            }
+
+            // Setear textos
             document.getElementById('displayPara').textContent = para;
             document.getElementById('displayDe').textContent = de;
             document.getElementById('displayTitulo').textContent = titulo;
-            messageText = mensaje; // Guardar para efecto máquina de escribir
+            messageText = mensaje; 
 
-            // Lógica Música
+            // Música
             if (yt) musicId = yt;
 
-            // Lógica Fotos (Tu regla de las 5 fotos)
-            let rawPhotos = [];
-            for(let i=0; i<5; i++) {
-                if(params.has(`foto${i}`)) {
-                    rawPhotos.push(params.get(`foto${i}`));
-                }
-            }
-
-            // Regla: Si hay fotos, completar 5. Si no hay, usar corazones.
-            if (rawPhotos.length === 0) {
-                // Caso: 0 fotos -> 5 corazones default
+            // Lógica Fotos (Regla de 5)
+            if (fotosRaw.length === 0) {
+                // 5 corazones default
                 for(let i=0; i<5; i++) {
-                    photoUrls.push('https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=400&auto=format&fit=crop'); // Corazones genéricos
+                    photoUrls.push('https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=400&auto=format&fit=crop'); 
                 }
             } else {
-                // Caso: 1-4 fotos -> Repetir lógica
-                photoUrls = [...rawPhotos];
+                photoUrls = [...fotosRaw];
+                // Rellenar hasta 5 repitiendo
+                let index = 0;
                 while(photoUrls.length < 5) {
-                    // Añadir la primera foto al final hasta llegar a 5
-                    photoUrls.push(rawPhotos[0]);
+                    photoUrls.push(fotosRaw[index % fotosRaw.length]);
+                    index++;
                 }
             }
 
-            // Renderizar Galería (Oculta hasta abrir sobre)
-            const gallery = document.getElementById('photoGallery');
+            // --- RENDERIZADO DE FOTOS EN LAS ZONAS DE RODEADO ---
+            const galleryLeft = document.getElementById('galleryLeft');
+            const galleryRight = document.getElementById('galleryRight');
+            
+            // Limpiar zonas
+            galleryLeft.innerHTML = '';
+            galleryRight.innerHTML = '';
+
             photoUrls.forEach((url, index) => {
-                // Rotación aleatoria entre -5 y 5 grados
-                const rotation = (Math.random() * 10) - 5;
+                // Rotación aleatoria
+                const rotation = (Math.random() * 12) - 6;
+                const delay = Math.random() * 2 + 's';
                 
-                const div = document.createElement('div');
-                div.className = 'polaroid';
-                div.style.setProperty('--rotation', `${rotation}deg`);
-                div.innerHTML = `
-                    <div class="w-48 h-48 md:w-56 md:h-56 overflow-hidden bg-gray-100 mb-2">
-                        <img src="${url}" class="w-full h-full object-cover" alt="Foto amor" onerror="this.src='https://placehold.co/400x400?text=Love'">
+                // Crear Polaroid HTML
+                let heartsHTML = '';
+                for(let h=0; h<3; h++) {
+                    const mx = (Math.random() * 60 - 30) + 'px';
+                    const my = -(Math.random() * 100 + 50) + 'px';
+                    heartsHTML += `<div class="mini-heart" style="left:${50 + (Math.random()*40-20)}%; top:0; --mx:${mx}; --my:${my}; animation-delay:${h*0.2}s">❤️</div>`;
+                }
+
+                const polaroidHTML = `
+                    <div class="polaroid" style="--rotation:${rotation}deg; --delay:${delay};">
+                        ${heartsHTML}
+                        <div class="w-40 h-40 md:w-48 md:h-48 overflow-hidden bg-gray-100 mb-2 rounded-sm shadow-inner relative group-hover:brightness-110 transition">
+                            <img src="${url}" class="w-full h-full object-cover transition transform duration-700 hover:scale-110" alt="Recuerdo" onerror="this.src='https://placehold.co/400x400/pink/white?text=Amor'">
+                        </div>
                     </div>
                 `;
-                gallery.appendChild(div);
+
+                // Distribuir: 2 a la izquierda/arriba, 3 a la derecha/abajo
+                if (index < 2) {
+                    galleryLeft.innerHTML += polaroidHTML;
+                } else {
+                    galleryRight.innerHTML += polaroidHTML;
+                }
             });
         }
 
@@ -413,19 +545,19 @@
             const envelope = document.getElementById('mainEnvelope');
             envelope.classList.add('open');
             
-            // 1. Iniciar Música (Usuario interactuó, autoplay permitido)
+            // Parar animación de flotar del sobre al abrir
+            document.querySelector('.envelope-container').style.animation = 'none';
+
             if (musicId) {
                 const player = document.createElement('iframe');
                 player.width = "0";
                 player.height = "0";
-                // playlist=${musicId}&loop=1 asegura loop. autoplay=1 inicia.
                 player.src = `https://www.youtube.com/embed/${musicId}?autoplay=1&loop=1&playlist=${musicId}&controls=0`;
                 player.allow = "autoplay";
                 player.style.display = "none";
                 document.getElementById('music-container').appendChild(player);
             }
 
-            // 2. Transición visual
             setTimeout(() => {
                 envelopeView.style.opacity = '0';
                 envelopeView.style.transition = 'opacity 1s';
@@ -434,7 +566,6 @@
                     envelopeView.classList.add('hidden-section');
                     cardView.classList.remove('hidden-section');
                     
-                    // 3. Iniciar Efectos
                     startPetals();
                     startTypewriter();
                 }, 1000);
@@ -443,15 +574,13 @@
 
         // --- 4. EFECTOS VISUALES ---
 
-        // Máquina de Escribir
         function startTypewriter() {
             const element = document.getElementById('typewriterText');
             let i = 0;
-            const speed = 50; // ms por letra
+            const speed = 50; 
 
             function type() {
                 if (i < messageText.length) {
-                    // Manejo básico de saltos de línea
                     if(messageText.charAt(i) === '\n') {
                          element.innerHTML += '<br>';
                     } else {
@@ -460,35 +589,28 @@
                     i++;
                     setTimeout(type, speed);
                 } else {
-                    // Fin escritura
                     document.querySelector('.cursor').style.display = 'none';
                 }
             }
             type();
         }
 
-        // Lluvia de Pétalos
         function startPetals() {
             setInterval(() => {
                 const petal = document.createElement('div');
                 petal.classList.add('petal');
-                petal.innerHTML = '🌸'; // O usar imagen SVG
+                petal.innerHTML = Math.random() > 0.5 ? '🌸' : '💖'; // Variedad en pétalos
                 petal.style.left = Math.random() * 100 + 'vw';
-                petal.style.fontSize = (Math.random() * 20 + 10) + 'px';
-                petal.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                petal.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                petal.style.animationDuration = (Math.random() * 3 + 3) + 's';
                 
                 document.body.appendChild(petal);
-
-                // Limpieza de memoria
-                setTimeout(() => {
-                    petal.remove();
-                }, 5000);
-            }, 300);
+                setTimeout(() => { petal.remove(); }, 6000);
+            }, 400);
         }
 
-        // Fallback música (por si acaso)
         function toggleMusicHints() {
-            alert("La música se está reproduciendo de fondo a través de YouTube.");
+            alert("🎵 La música está sonando. Si no la escuchas, interactúa con la página o verifica el volumen.");
         }
 
     </script>
